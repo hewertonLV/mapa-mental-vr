@@ -5,86 +5,100 @@
   <title>Mapa Mental 360°</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <style>
-    body { margin:0; overflow:hidden; }
-    #startButton {
-      position:absolute;
-      top:50%;
-      left:50%;
-      transform:translate(-50%,-50%);
-      padding:20px 30px;
-      font-size:18px;
-      background:#4CC3D9;
-      color:#fff;
-      border:none;
-      border-radius:5px;
-      z-index:999;
+    body { margin: 0; overflow: hidden; }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: 20px;
+      font-family: sans-serif;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <button id="startButton">Entrar no Mapa 360°</button>
+  <div id="loading">Acessando sensores de movimento...</div>
 
   <script>
-    const button = document.getElementById('startButton');
-    button.addEventListener('click', async () => {
-      // Permissão do giroscópio no iOS/Android
-      if (typeof DeviceOrientationEvent !== 'undefined' &&
-          typeof DeviceOrientationEvent.requestPermission === 'function') {
-        try { await DeviceOrientationEvent.requestPermission(); } 
-        catch(e){ alert('Permissão negada!'); return; }
+    async function initVR() {
+      // Pedir permissão do giroscópio no iOS/Android
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          await DeviceOrientationEvent.requestPermission();
+        } catch(e) {
+          document.getElementById('loading').innerText = 'Permissão negada!';
+          return;
+        }
       }
-      button.style.display = 'none';
 
+      document.getElementById('loading').style.display = 'none';
+
+      // Criar a cena A-Frame
       const scene = document.createElement('a-scene');
       scene.setAttribute('embedded','');
       scene.setAttribute('vr-mode-ui','enabled:true');
 
-      // Círculo de 12 nós
-      const radius = 3;
-      const numNodes = 12;
-      const colors = ["#4CC3D9","#FFC65D","#7BC8A4","#F16745","#9B59B6","#E67E22","#1ABC9C","#34495E","#FF6F61","#2ECC71","#E74C3C","#3498DB"];
-      const labels = ["Central","Nó1","Nó2","Nó3","Nó4","Nó5","Nó6","Nó7","Nó8","Nó9","Nó10","Nó11"];
-
-      for(let i=0;i<numNodes;i++){
-        const angle = (i/numNodes)*2*Math.PI;
-        const x = radius * Math.cos(angle);
-        const z = radius * Math.sin(angle);
-        const sphere = document.createElement('a-sphere');
-        sphere.setAttribute('position', `${x} 1.6 ${z}`);
-        sphere.setAttribute('radius','0.3');
-        sphere.setAttribute('color', colors[i%colors.length]);
-
-        const text = document.createElement('a-text');
-        text.setAttribute('value', labels[i]);
-        text.setAttribute('align','center');
-        text.setAttribute('position','0 0.6 0');
-        text.setAttribute('color','#fff');
-
-        sphere.appendChild(text);
-        scene.appendChild(sphere);
-
-        // Linhas conectando o nó central (0) a todos os outros
-        if(i>0){
-          const line = document.createElement('a-entity');
-          line.setAttribute('line',`start:0 1.6 0; end:${x} 1.6 ${z}; color:#fff`);
-          scene.appendChild(line);
-        }
-      }
+      // Câmera no centro
+      const camera = document.createElement('a-entity');
+      camera.setAttribute('camera','');
+      camera.setAttribute('look-controls','enabled:true');
+      camera.setAttribute('position','0 1.6 0');
+      scene.appendChild(camera);
 
       // Céu
       const sky = document.createElement('a-sky');
       sky.setAttribute('color','#111');
       scene.appendChild(sky);
 
-      // Câmera
-      const camera = document.createElement('a-entity');
-      camera.setAttribute('camera','');
-      camera.setAttribute('look-controls','');
-      camera.setAttribute('position','0 1.6 0');
-      scene.appendChild(camera);
+      // Criar 12 nós em círculo
+      const radius = 3;
+      const numNodes = 12;
+      const colors = ["#4CC3D9","#FFC65D","#7BC8A4","#F16745","#9B59B6","#E67E22","#1ABC9C","#34495E","#FF6F61","#2ECC71","#E74C3C","#3498DB"];
+      const labels = ["Central","Nó1","Nó2","Nó3","Nó4","Nó5","Nó6","Nó7","Nó8","Nó9","Nó10","Nó11"];
+
+      // Nó central
+      const centralSphere = document.createElement('a-sphere');
+      centralSphere.setAttribute('position','0 1.6 -3');
+      centralSphere.setAttribute('radius','0.3');
+      centralSphere.setAttribute('color',colors[0]);
+      const centralText = document.createElement('a-text');
+      centralText.setAttribute('value',labels[0]);
+      centralText.setAttribute('align','center');
+      centralText.setAttribute('position','0 0.6 0');
+      centralText.setAttribute('color','#fff');
+      centralSphere.appendChild(centralText);
+      scene.appendChild(centralSphere);
+
+      for(let i=1;i<numNodes;i++){
+        const angle = (i/numNodes)*2*Math.PI;
+        const x = radius * Math.cos(angle);
+        const z = radius * Math.sin(angle);
+        const sphere = document.createElement('a-sphere');
+        sphere.setAttribute('position',`${x} 1.6 ${z}`);
+        sphere.setAttribute('radius','0.3');
+        sphere.setAttribute('color',colors[i%colors.length]);
+
+        const text = document.createElement('a-text');
+        text.setAttribute('value',labels[i]);
+        text.setAttribute('align','center');
+        text.setAttribute('position','0 0.6 0');
+        text.setAttribute('color','#fff');
+        sphere.appendChild(text);
+        scene.appendChild(sphere);
+
+        // Linhas conectando ao nó central
+        const line = document.createElement('a-entity');
+        line.setAttribute('line',`start:0 1.6 -3; end:${x} 1.6 ${z}; color:#fff`);
+        scene.appendChild(line);
+      }
 
       document.body.appendChild(scene);
-    });
+    }
+
+    // Inicializa ao carregar a página
+    window.addEventListener('load', initVR);
   </script>
 </body>
 </html>
