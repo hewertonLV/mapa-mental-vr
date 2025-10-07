@@ -2,103 +2,29 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Mapa Mental 360°</title>
+  <title>Mapa Mental VR Simples</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <style>
-    body { margin: 0; overflow: hidden; }
-    #loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #fff;
-      font-size: 20px;
-      font-family: sans-serif;
-      text-align: center;
-    }
+    body { margin:0; overflow:hidden; }
   </style>
 </head>
 <body>
-  <div id="loading">Acessando sensores de movimento...</div>
+  <a-scene embedded vr-mode-ui="enabled:true" device-orientation-permission-ui="enabled:true">
+    <!-- Céu -->
+    <a-sky color="#222"></a-sky>
 
-  <script>
-    async function initVR() {
-      // Pedir permissão do giroscópio no iOS/Android
-      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        try {
-          await DeviceOrientationEvent.requestPermission();
-        } catch(e) {
-          document.getElementById('loading').innerText = 'Permissão negada!';
-          return;
-        }
-      }
+    <!-- Câmera -->
+    <a-entity camera look-controls position="0 1.6 0"></a-entity>
 
-      document.getElementById('loading').style.display = 'none';
+    <!-- Nó central -->
+    <a-sphere position="0 1.6 -2" radius="0.3" color="#4CC3D9">
+      <a-text value="Central" align="center" position="0 0.6 0" color="#fff"></a-text>
+    </a-sphere>
 
-      // Criar a cena A-Frame
-      const scene = document.createElement('a-scene');
-      scene.setAttribute('embedded','');
-      scene.setAttribute('vr-mode-ui','enabled:true');
-
-      // Câmera no centro
-      const camera = document.createElement('a-entity');
-      camera.setAttribute('camera','');
-      camera.setAttribute('look-controls','enabled:true');
-      camera.setAttribute('position','0 1.6 0');
-      scene.appendChild(camera);
-
-      // Céu
-      const sky = document.createElement('a-sky');
-      sky.setAttribute('color','#111');
-      scene.appendChild(sky);
-
-      // Criar 12 nós em círculo
-      const radius = 3;
-      const numNodes = 12;
-      const colors = ["#4CC3D9","#FFC65D","#7BC8A4","#F16745","#9B59B6","#E67E22","#1ABC9C","#34495E","#FF6F61","#2ECC71","#E74C3C","#3498DB"];
-      const labels = ["Central","Nó1","Nó2","Nó3","Nó4","Nó5","Nó6","Nó7","Nó8","Nó9","Nó10","Nó11"];
-
-      // Nó central
-      const centralSphere = document.createElement('a-sphere');
-      centralSphere.setAttribute('position','0 1.6 -3');
-      centralSphere.setAttribute('radius','0.3');
-      centralSphere.setAttribute('color',colors[0]);
-      const centralText = document.createElement('a-text');
-      centralText.setAttribute('value',labels[0]);
-      centralText.setAttribute('align','center');
-      centralText.setAttribute('position','0 0.6 0');
-      centralText.setAttribute('color','#fff');
-      centralSphere.appendChild(centralText);
-      scene.appendChild(centralSphere);
-
-      for(let i=1;i<numNodes;i++){
-        const angle = (i/numNodes)*2*Math.PI;
-        const x = radius * Math.cos(angle);
-        const z = radius * Math.sin(angle);
-        const sphere = document.createElement('a-sphere');
-        sphere.setAttribute('position',`${x} 1.6 ${z}`);
-        sphere.setAttribute('radius','0.3');
-        sphere.setAttribute('color',colors[i%colors.length]);
-
-        const text = document.createElement('a-text');
-        text.setAttribute('value',labels[i]);
-        text.setAttribute('align','center');
-        text.setAttribute('position','0 0.6 0');
-        text.setAttribute('color','#fff');
-        sphere.appendChild(text);
-        scene.appendChild(sphere);
-
-        // Linhas conectando ao nó central
-        const line = document.createElement('a-entity');
-        line.setAttribute('line',`start:0 1.6 -3; end:${x} 1.6 ${z}; color:#fff`);
-        scene.appendChild(line);
-      }
-
-      document.body.appendChild(scene);
-    }
-
-    // Inicializa ao carregar a página
-    window.addEventListener('load', initVR);
-  </script>
+    <!-- Nó à frente (ou lado) -->
+    <a-sphere position="2 1.6 0" radius="0.3" color="#FFC65D">
+      <a-text value="Tópico 1" align="center" position="0 0.6 0" color="#000"></a-text>
+    </a-sphere>
+  </a-scene>
 </body>
 </html>
