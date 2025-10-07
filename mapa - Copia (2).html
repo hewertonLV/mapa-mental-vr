@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapa Mental 360°</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>
+    body { margin:0; overflow:hidden; }
+    #startButton {
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      padding:20px 30px;
+      font-size:18px;
+      background:#4CC3D9;
+      color:#fff;
+      border:none;
+      border-radius:5px;
+    }
+  </style>
+</head>
+<body>
+  <button id="startButton">Entrar no Mapa 360°</button>
+
+  <script>
+    const button = document.getElementById('startButton');
+
+    button.addEventListener('click', async () => {
+      // Permissão do giroscópio no iOS e Android
+      if (typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          await DeviceOrientationEvent.requestPermission();
+        } catch(e){
+          alert('Permissão negada!');
+          return;
+        }
+      }
+
+      button.style.display = 'none';
+
+      // Cria a cena A-Frame
+      const scene = document.createElement('a-scene');
+      scene.setAttribute('embedded','');
+      scene.setAttribute('vr-mode-ui','enabled:true');
+
+      scene.innerHTML = `
+        <a-sky color="#111"></a-sky>
+        <a-entity camera look-controls position="0 1.6 0"></a-entity>
+
+        <a-sphere position="0 1.6 -3" radius="0.3" color="#4CC3D9">
+          <a-text value="Ideia Central" align="center" position="0 0.6 0" color="#fff"></a-text>
+        </a-sphere>
+
+        <a-sphere position="3 1.6 0" radius="0.3" color="#FFC65D">
+          <a-text value="Tópico Direito" align="center" position="0 0.6 0" color="#000"></a-text>
+        </a-sphere>
+
+        <a-sphere position="-3 1.6 0" radius="0.3" color="#7BC8A4">
+          <a-text value="Tópico Esquerdo" align="center" position="0 0.6 0" color="#000"></a-text>
+        </a-sphere>
+
+        <a-sphere position="0 1.6 3" radius="0.3" color="#F16745">
+          <a-text value="Tópico Trás" align="center" position="0 0.6 0" color="#fff"></a-text>
+        </a-sphere>
+
+        <a-entity line="start:0 1.6 -3; end:3 1.6 0; color:#fff"></a-entity>
+        <a-entity line="start:0 1.6 -3; end:-3 1.6 0; color:#fff"></a-entity>
+        <a-entity line="start:0 1.6 -3; end:0 1.6 3; color:#fff"></a-entity>
+        <a-entity line="start:3 1.6 0; end:-3 1.6 0; color:#fff"></a-entity>
+        <a-entity line="start:3 1.6 0; end:0 1.6 3; color:#fff"></a-entity>
+        <a-entity line="start:-3 1.6 0; end:0 1.6 3; color:#fff"></a-entity>
+      `;
+
+      document.body.appendChild(scene);
+    });
+  </script>
+</body>
+</html>
